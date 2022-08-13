@@ -2,6 +2,7 @@ const express = require("express");
 const app = express();
 const cors = require('cors')
 app.use(cors());
+app.use(express.json())
 
 // const swaggerUi = require('swagger-ui-express');
 // const swaggerDocument = require('./swagger.json');
@@ -173,9 +174,10 @@ app.get("/api/v1/product/:id", (req, res) => {
 
 app.post("/api/v1/product", (req, res) => {
     const product = req.body;
+    console.log(req);
     const max = Math.max(...products.map(({id}) => id));
-    product.id = max + 1;
-    products.push(product);
+    // product.id = max + 1;
+    products.push({...product,id:(max + 1)});
     res.send(product);
 });
 
