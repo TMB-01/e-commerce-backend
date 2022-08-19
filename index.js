@@ -177,7 +177,7 @@ app.post("/api/v1/product", (req, res) => {
     console.log(req);
     const max = Math.max(...products.map(({id}) => id));
     // product.id = max + 1;
-    products.push({...product,id:(max + 1)});
+    products.push({...product, id: (max + 1)});
     res.send(product);
 });
 
@@ -201,10 +201,10 @@ app.put("/api/v1/product/:id", (req, res) => {
 
 app.delete("/api/v1/product/:id", (req, res) => {
     const id = req.params.id;
-    const isExist = products.find(({id: pId}) => id === pId);
+    const isExist = products.find(({id: pId}) => Number(id) === pId);
     if (isExist) {
-        products = products.filter(({id: pId}) => id !== pId);
-        res.send("Delete");
+        products = products.filter(({id: pId}) => Number(id) !== pId);
+        res.send("Deleted");
     } else {
         res.status(404).json("Product is not found");
     }
