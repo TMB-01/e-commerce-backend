@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
 const cors = require('cors')
+const jwt = require("jsonwebtoken")
 app.use(cors());
 app.use(express.json())
 
@@ -10,6 +11,8 @@ app.use(express.json())
 // app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument, {
 //     explorer: true
 // }));
+
+const secretKey = "this_is_my_secret_key";
 
 let products = [
     {
@@ -158,9 +161,65 @@ let products = [
     },
 ]
 
+let users = [
+    {
+        username: "admin",
+        password: "admin",
+        role: "admin",
+    }
+]
+
+const allowAdmin = (req, res, next) => {
+    const token = req.headers["authorization"];
+
+    if (token) {
+        try {
+            const payload = jwt.verify(token.slice(7), secretKey);
+            const user = users.find(({username}) => username === payload.username)
+            if (user) {
+                if (user.role === "admin") {
+                    req.user = user;
+                    next();
+                } else {
+                    res.status(401).json("Not allowed")
+                }
+            } else {
+                res.status(404).json("User Not found");
+            }
+        } catch (e) {
+            console.log(e)
+            res.status(400).json("Token is invalid")
+        }
+    } else {
+        res.status(403).json("Token is not provided")
+    }
+
+
+}
+
 app.get("/", function (req, res) {
     res.send("Hello World");
 });
+
+app.get("/api/v1/login", (req, res) => {
+    const {username, password} = req.body;
+    const user = users.find(({username: u, password: p}) => {
+        return u === username && p === password;
+    })
+
+    if (user) {
+        const token = jwt.sign({username}, secretKey)
+        res.send({
+            ok: true,
+            token
+        })
+    } else {
+        res.send({
+            ok: false,
+            msg: "username or password error"
+        })
+    }
+})
 
 app.get("/api/v1/products", (req, res) => {
     res.send(products);
@@ -172,7 +231,7 @@ app.get("/api/v1/product/:id", (req, res) => {
     res.send(product);
 });
 
-app.post("/api/v1/product", (req, res) => {
+app.post("/api/v1/product", allowAdmin, (req, res) => {
     const product = req.body;
     console.log(req);
     const max = Math.max(...products.map(({id}) => id));
@@ -181,7 +240,7 @@ app.post("/api/v1/product", (req, res) => {
     res.send(product);
 });
 
-app.put("/api/v1/product/:id", (req, res) => {
+app.put("/api/v1/product/:id", allowAdmin, (req, res) => {
     const id = req.params.id;
     const product = req.body;
     product.id = id;
@@ -199,7 +258,7 @@ app.put("/api/v1/product/:id", (req, res) => {
     }
 });
 
-app.delete("/api/v1/product/:id", (req, res) => {
+app.delete("/api/v1/product/:id", allowAdmin, (req, res) => {
     const id = req.params.id;
     const isExist = products.find(({id: pId}) => Number(id) === pId);
     if (isExist) {
@@ -209,5 +268,6 @@ app.delete("/api/v1/product/:id", (req, res) => {
         res.status(404).json("Product is not found");
     }
 });
+
 
 app.listen(3434);
