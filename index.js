@@ -202,7 +202,7 @@ app.get("/", function (req, res) {
 });
 
 app.get("/api/v1/login", (req, res) => {
-    const {username, password} = req.body;
+    const {username, password} = req.query;
     const user = users.find(({username: u, password: p}) => {
         return u === username && p === password;
     })
