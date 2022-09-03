@@ -241,9 +241,9 @@ app.post("/api/v1/product", allowAdmin, (req, res) => {
 });
 
 app.put("/api/v1/product/:id", allowAdmin, (req, res) => {
-    const id = req.params.id;
+    const id = Number(req.params.id);
     const product = req.body;
-    product.id = Number(id);
+    product.id = id;
     const isExist = products.find(({id: pId}) => id === pId);
     if (isExist) {
         products = products.map((p) => {
