@@ -193,8 +193,6 @@ const allowAdmin = (req, res, next) => {
     } else {
         res.status(403).json("Token is not provided")
     }
-
-
 }
 
 app.get("/", function (req, res) {
@@ -218,6 +216,41 @@ app.get("/api/v1/login", (req, res) => {
             ok: false,
             msg: "username or password error"
         })
+    }
+})
+
+app.post("/api/v1/registration", (req, res) => {
+    const user = req.body;
+    if (user.username && user.password) {
+        users.push({
+            username: user.username,
+            password: user.password,
+            role: "user"
+        });
+        res.send("Registered");
+    } else {
+        res.status(400).join("username and password are required")
+    }
+})
+
+app.get("/api/v1/me", (req, res) => {
+    const token = req.headers["authorization"];
+
+    if (token) {
+        try {
+            const payload = jwt.verify(token.slice(7), secretKey);
+            const user = users.find(({username}) => username === payload.username)
+            if (user) {
+                res.send(user);
+            } else {
+                res.status(404).json("User Not found");
+            }
+        } catch (e) {
+            console.log(e)
+            res.status(400).json("Token is invalid")
+        }
+    } else {
+        res.status(403).json("Token is not provided")
     }
 })
 
