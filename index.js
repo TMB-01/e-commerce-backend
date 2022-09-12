@@ -258,6 +258,11 @@ app.get("/api/v1/products", (req, res) => {
     res.send(products);
 });
 
+app.get("/api/v1/products/list", (req, res) => {
+    const ids = req.query["ids"].split(",").map((id)=>Number(id));
+    res.send(products.filter(({id})=>ids.includes(id)));
+})
+
 app.get("/api/v1/product/:id", (req, res) => {
     const id = Number(req.params.id);
     const product = products.find(({id: pId}) => id === pId)
