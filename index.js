@@ -169,6 +169,8 @@ let users = [
     }
 ]
 
+let cart = []
+
 const allowAdmin = (req, res, next) => {
     const token = req.headers["authorization"];
 
@@ -259,8 +261,8 @@ app.get("/api/v1/products", (req, res) => {
 });
 
 app.get("/api/v1/products/list", (req, res) => {
-    const ids = req.query["ids"].split(",").map((id)=>Number(id));
-    res.send(products.filter(({id})=>ids.includes(id)));
+    const ids = req.query["ids"].split(",").map((id) => Number(id));
+    res.send(products.filter(({id}) => ids.includes(id)));
 })
 
 app.get("/api/v1/product/:id", (req, res) => {
@@ -307,5 +309,25 @@ app.delete("/api/v1/product/:id", allowAdmin, (req, res) => {
     }
 });
 
+app.post("/api/v1/cart", (req, res) => {
+    const data = req.body;
+    cart.push(data);
+    res.send("added to cart")
+})
+
+app.get("/api/v1/cart", allowAdmin, (req, res) => {
+    const result = cart.map((c) => {
+        return {
+            ...c,
+            products: c.products.map((p) => {
+                return {
+                    ...p,
+                    ...products.find(({id}) => id === p.id)
+                }
+            })
+        }
+    })
+    res.send(result);
+})
 
 app.listen(3434);
