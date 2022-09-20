@@ -316,13 +316,13 @@ app.post("/api/v1/cart", (req, res) => {
 })
 
 app.get("/api/v1/cart", allowAdmin, (req, res) => {
-    const result = cart.map((c) => {
+    const result = cart?.map((c) => {
         return {
             ...c,
-            products: c.products.map((p) => {
+            products: c.products?.map((p) => {
                 return {
                     ...p,
-                    ...products.find(({id}) => id === p.id)
+                    ...products?.find(({id}) => id === p.id)
                 }
             })
         }
